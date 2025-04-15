@@ -2,20 +2,36 @@
 <html>
   <head>
     <title>LA TV Shows | Home</title>
-    <meta name="description" content="A Catalog of Shows Set in Los Angeles" />
+    <meta name="description" content="Top Anime's of the Decade" />
     <link rel="stylesheet" href="style.css" />
     <script type="text/javascript" src="scripts.js"></script>
   </head>
 
   <body>
     <header class="main-header">
-      <h1 class="title">LA TV Shows</h1>
+      <h1 class="title">Anime</h1>
     </header>
+    <div class = "controls">
+      <input type="text" id="search-box" placeholder="Search by title" />
+      <button onclick="searchAnime()">Search</button>
+  
+      <select id="genre-filter" onchange="filterByGenre()">
+        <option value="">All Genres</option>
+      </select>
+  
+      <button onclick="resetCatalog()">Reset</button>
+
+      <select id="sort-hype" onchange="sortByHype()">
+        <option value="">Sort by Hype</option>
+        <option value="desc">Most Hyped</option>
+        <option value="asc">Least Hyped</option>
+      </select>
+    </div>
     <div id="card-container"></div>
     <div class="card" style="display: none">
       <div class="card-content">
-        <h2>TV Show Title</h2>
-        <img src="" alt="TV Show Poster" />
+        <h2>Anime Show Title</h2>
+        <img src="" alt="Anime Poster" />
         <ul>
           <li>Bullet Point 1</li>
           <li>Bullet Point 2</li>

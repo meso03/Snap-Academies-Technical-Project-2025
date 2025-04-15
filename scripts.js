@@ -23,62 +23,164 @@
  *
  */
 
-const FRESH_PRINCE_URL =
-  "https://upload.wikimedia.org/wikipedia/en/3/33/Fresh_Prince_S1_DVD.jpg";
-const CURB_POSTER_URL =
-  "https://m.media-amazon.com/images/M/MV5BZDY1ZGM4OGItMWMyNS00MDAyLWE2Y2MtZTFhMTU0MGI5ZDFlXkEyXkFqcGdeQXVyMDc5ODIzMw@@._V1_FMjpg_UX1000_.jpg";
-const EAST_LOS_HIGH_POSTER_URL =
-  "https://static.wikia.nocookie.net/hulu/images/6/64/East_Los_High.jpg";
+let animeByTitle = {}; //Hash table for search
+let animeByGenre = {}; //Genre index
+let fullData = []
 
-// This is an array of strings (TV show titles)
-let titles = [
-  "Fresh Prince of Bel Air",
-  "Curb Your Enthusiasm",
-  "East Los High",
-];
-// Your final submission should have much more data than this, and
-// you should use more than just an array of strings to store it all.
+function showCards(){
+  //  Importing data from external JSON file (an array of anime objects) 
+  fetch("data_with_images.json") 
+    .then(response => response.json())
+    .then(data => {
+      fullData = data;
 
-// This function adds cards the page to display the data in the array
-function showCards() {
+      data.forEach(anime => {
+        // Title filtering
+        const titleKey = anime.title.text.toLowerCase();
+        animeByTitle[titleKey] = anime;
+
+        // Genre filtering
+        anime.genres.forEach(genre => {
+          if (!animeByGenre[genre]){
+            animeByGenre[genre] = [];
+          }
+          animeByGenre[genre].push(anime);
+        });
+      });
+
+      renderCards(data); //Display all cards initially
+      populateGenreFilter(); // Add genre dropdown
+    })
+    .catch(err => console.error("Error loading data:", err))
+  }
+
+function renderCards(animeList){
   const cardContainer = document.getElementById("card-container");
   cardContainer.innerHTML = "";
-  const templateCard = document.querySelector(".card");
+  const template = document.querySelector(".card");
 
-  for (let i = 0; i < titles.length; i++) {
-    let title = titles[i];
+  animeList.forEach(anime => {
+    const card = template.cloneNode(true);
+    editCardContent(card, anime);
+    cardContainer.appendChild(card);
+  });
+}
 
-    // This part of the code doesn't scale very well! After you add your
-    // own data, you'll need to do something totally different here.
-    let imageURL = "";
-    if (i == 0) {
-      imageURL = FRESH_PRINCE_URL;
-    } else if (i == 1) {
-      imageURL = CURB_POSTER_URL;
-    } else if (i == 2) {
-      imageURL = EAST_LOS_HIGH_POSTER_URL;
-    }
+function searchAnime(){
+  const input = document.getElementById("search-box").value.trim().toLowerCase();
+  const selectedGenre = document.getElementById("genre-filter").value;
 
-    const nextCard = templateCard.cloneNode(true); // Copy the template card
-    editCardContent(nextCard, title, imageURL); // Edit title and image
-    cardContainer.appendChild(nextCard); // Add new card to the container
+  //Check has table (fast exactMatch)
+  const exactMatch = animeByTitle[input];
+  if (exactMatch && (!selectedGenre || exactMatch.genres.includes(selectedGenre))){
+    renderCards([exactMatch]);
+    return;
+  }
+
+  let filteredList = selectedGenre ? animeByGenre[selectedGenre] : fullData;
+  const result = filteredList.filter(anime => 
+    anime.title.text.toLowerCase().includes(input));
+  
+  
+  if (result.length > 0){
+    renderCards(result);
+  }
+  else{
+    alert("No anime found.");
   }
 }
 
-function editCardContent(card, newTitle, newImageURL) {
+function filterByGenre(){
+  const selected = document.getElementById("genre-filter").value;
+  if (!selected) {
+    renderCards(fullData); //Show all
+  }
+  else{
+    renderCards(animeByGenre[selected]);
+  }
+}
+
+function populateGenreFilter(){
+  const dropdown = document.getElementById("genre-filter");
+  const genres = Object.keys(animeByGenre).sort();
+  genres.forEach(genre => {
+    const option = document.createElement("option");
+    option.value = genre;
+    option.textContent = genre;
+    dropdown.appendChild(option);
+  })
+}
+
+function resetCatalog() {
+  document.getElementById("search-box").value = "";
+  document.getElementById("genre-filter").value = "";
+  document.getElementById("sort-hype").value = "";
+  renderCards(fullData); //Show all anime again
+}
+
+function sortByHype() {
+  const direction = document.getElementById("sort-hype").value;
+
+  let currentList = [...fullData]; //copy of full list
+
+  //Genre filter takes precedence
+  const genre = document.getElementById("genre-filter").value;
+  if (genre) {
+    currentList = [...animeByGenre[genre]];
+  }
+
+  //Search input also takes precedence
+  const input = document.getElementById("search-box").value.trim().toLowerCase();
+  if (input) {
+    currentList = currentList.filter(anime =>
+      anime.title.text.toLowerCase().includes(input)
+    );
+  }
+
+  //Sort
+  if (direction === "desc") {
+    currentList.sort((a, b) => b.hype - a.hype); //highest to lowest
+  }
+  else if (direction === "asc") {
+    currentList.sort((a, b) => a.hype - b.hype);  //lowest to highest
+  }
+
+  renderCards(currentList);
+}
+
+function editCardContent(card, anime) {
   card.style.display = "block";
 
-  const cardHeader = card.querySelector("h2");
-  cardHeader.textContent = newTitle;
+  //Set the title with a clickable link
+  const header = card.querySelector("h2");
+  header.innerHTML = `<a href="${anime.title.link}" target="_blank">${anime.title.text}</a>`;
 
+
+  //Sets image of each card
   const cardImage = card.querySelector("img");
-  cardImage.src = newImageURL;
-  cardImage.alt = newTitle + " Poster";
+  cardImage.src = anime.image || `https://via.placeholder.com/200x300?text=${encodeURIComponent(anime.title.text)}`;
+  cardImage.alt = anime.title.text;
 
-  // You can use console.log to help you debug!
-  // View the output by right clicking on your website,
-  // select "Inspect", then click on the "Console" tab
-  console.log("new card:", newTitle, "- html: ", card);
+  //Fill in the bullet points
+  const ul = card.querySelector("ul");
+  ul.innerHTML = "";
+  anime.genres.forEach(genre => {
+    const li = document.createElement("li");
+    li.textContent = genre;
+    ul.appendChild(li);
+  });
+
+  //Hype Score
+  const hypeLi = document.createElement("li");
+  hypeLi.textContent = 'Hype: ${anime.hype}';
+  ul.appendChild(hypeLi);
+
+  //Description
+  const desc = document.createElement("p");
+  desc.textContent = anime.description;
+  card.querySelector(".card-content").appendChild(desc);
+
+  console.log("New card created:", anime.title.text, "- HTML: ", card);
 }
 
 // This calls the addCards() function when the page is first loaded
