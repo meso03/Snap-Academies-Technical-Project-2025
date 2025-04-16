@@ -178,8 +178,23 @@ function editCardContent(card, anime) {
   //Description
   const desc = document.createElement("p");
   desc.textContent = anime.description;
-  card.querySelector(".card-content").appendChild(desc);
+  desc.classList.add("truncatable");
 
+  // Create "Show More / Show Less" button
+  const toggleBtn = document.createElement("button");
+  toggleBtn.textContent = "Show More";
+  toggleBtn.classList.add("toggle-description");
+
+  // Toggle expansion and button text
+  toggleBtn.addEventListener("click", () => {
+    desc.classList.toggle("expanded");
+    toggleBtn.textContent = desc.classList.contains("expanded") ? "Show Less" : "Show More";
+  }); 
+
+  const content = card.querySelector(".card-content");
+  content.appendChild(desc);
+  content.appendChild(toggleBtn);
+  
   console.log("New card created:", anime.title.text, "- HTML: ", card);
 }
 
