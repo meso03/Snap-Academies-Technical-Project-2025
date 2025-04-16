@@ -162,18 +162,32 @@ function editCardContent(card, anime) {
   cardImage.alt = anime.title.text;
 
   //Fill in the bullet points
-  const ul = card.querySelector("ul");
-  ul.innerHTML = "";
+  // const ul = card.querySelector("ul");
+  // ul.innerHTML = "";
+  // anime.genres.forEach(genre => {
+  //   const li = document.createElement("li");
+  //   li.textContent = genre;
+  //   ul.appendChild(li);
+  // });
+  const genresSection = document.createElement("div");
+  genresSection.className = "genres-section";
+
+  const genresHeading = document.createElement("h3");
+  genresHeading.textContent = "Genres";
+  genresSection.appendChild(genresHeading);
+
+  const ul = document.createElement("ul");
   anime.genres.forEach(genre => {
-    const li = document.createElement("li");
-    li.textContent = genre;
-    ul.appendChild(li);
+    const genreLi = document.createElement("li");
+    genreLi.textContent = genre;
+    ul.appendChild(genreLi);
   });
+  genresSection.appendChild(ul);
 
   //Hype Score
-  const hypeLi = document.createElement("li");
-  hypeLi.textContent = 'Hype: ${anime.hype}';
-  ul.appendChild(hypeLi);
+  const hypeDisplay = document.createElement("div");
+  hypeDisplay.className = "hype-score";
+  hypeDisplay.textContent = `Hype: ${anime.hype}`;
 
   //Description
   const desc = document.createElement("p");
@@ -192,6 +206,10 @@ function editCardContent(card, anime) {
   }); 
 
   const content = card.querySelector(".card-content");
+  content.appendChild(header);
+  content.appendChild(cardImage);
+  content.appendChild(hypeDisplay);
+  content.appendChild(genresSection);
   content.appendChild(desc);
   content.appendChild(toggleBtn);
   
