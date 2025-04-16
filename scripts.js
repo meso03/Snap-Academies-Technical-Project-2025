@@ -1,6 +1,6 @@
 /**
  * Data Catalog Project Starter Code - SEA Stage 2
- *
+ * 
  * This file is where you should be doing most of your work. You should
  * also make changes to the HTML and CSS files, but we want you to prioritize
  * demonstrating your understanding of data structures, and you'll do that
@@ -21,6 +21,14 @@
  *    browser and observe what happens. You should see a fourth "card" appear
  *    with the string you added to the array, but a broken image.
  *
+ *  * Data Attribution:
+ * ----------------
+ * The anime data used in this project is sourced from:
+ * - Primary Data: MyAnimeList (https://myanimelist.net/) and AniList (https://anilist.co/)
+ * - Data Format: JSON
+ * - Data Contents: Includes anime titles, descriptions, genres, hype scores, and images
+ * - Image Sources: Images are hosted on MyAnimeList and AniList CDNs
+ * 
  */
 
 let animeByTitle = {}; //Hash table for search
@@ -161,14 +169,7 @@ function editCardContent(card, anime) {
   cardImage.src = anime.image || `https://via.placeholder.com/200x300?text=${encodeURIComponent(anime.title.text)}`;
   cardImage.alt = anime.title.text;
 
-  //Fill in the bullet points
-  // const ul = card.querySelector("ul");
-  // ul.innerHTML = "";
-  // anime.genres.forEach(genre => {
-  //   const li = document.createElement("li");
-  //   li.textContent = genre;
-  //   ul.appendChild(li);
-  // });
+  //Handling Genres
   const genresSection = document.createElement("div");
   genresSection.className = "genres-section";
 
@@ -184,17 +185,17 @@ function editCardContent(card, anime) {
   });
   genresSection.appendChild(ul);
 
-  //Hype Score
+  //Handling Hype Score
   const hypeDisplay = document.createElement("div");
   hypeDisplay.className = "hype-score";
   hypeDisplay.textContent = `Hype: ${anime.hype}`;
 
-  //Description
+  //Handling Description
   const desc = document.createElement("p");
   desc.textContent = anime.description;
   desc.classList.add("truncatable");
 
-  // Create "Show More / Show Less" button
+  // Handling "Show More / Show Less" button
   const toggleBtn = document.createElement("button");
   toggleBtn.textContent = "Show More";
   toggleBtn.classList.add("toggle-description");
@@ -227,6 +228,59 @@ function quoteAlert() {
 }
 
 function removeLastCard() {
-  titles.pop(); // Remove last item in titles array
-  showCards(); // Call showCards again to refresh
+  if (fullData.length > 0) {
+    fullData.pop(); //Remove last item from fullData array
+    renderCards(fullData); //Redisplay remaining cards
+  }
+  else{
+    alert("No more cards to remove.");
+  }
+}
+
+function addNewAnime(event) {
+  event.preventDefault();
+  
+  // Get values from form
+  const title = document.getElementById('title').value;
+  const link = document.getElementById('link').value.trim();
+  const imageUrl = document.getElementById('image').value.trim();
+  const genres = document.getElementById('genres').value.split(',').map(g => g.trim());
+  const hype = parseInt(document.getElementById('hype').value);
+  const description = document.getElementById('description').value;
+
+  // Create new anime object
+  const newAnime = {
+    title: {
+      text: title,
+      link: link || '#'  // Use '#' if no link provided
+    },
+    image: imageUrl || `https://via.placeholder.com/200x300?text=${encodeURIComponent(title)}`, // Use placeholder if no image provided
+    genres: genres,
+    hype: hype,
+    description: description
+  };
+
+  fullData.unshift(newAnime); // Add to beginning of array
+  
+  // Update indices
+  const titleKey = title.toLowerCase();
+  animeByTitle[titleKey] = newAnime;
+  
+  genres.forEach(genre => {
+    if (!animeByGenre[genre]) {
+      animeByGenre[genre] = [];
+    }
+    animeByGenre[genre].push(newAnime);
+  });
+
+  // Update display
+  renderCards(fullData);
+  populateGenreFilter(); // Refresh genre filter in case new genres were added
+  
+  // Reset and hide form
+  event.target.reset();
+  toggleAddForm();
+  
+  // Show confirmation
+  alert('New anime added successfully!');
 }
