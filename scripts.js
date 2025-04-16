@@ -284,3 +284,12 @@ function addNewAnime(event) {
   // Show confirmation
   alert('New anime added successfully!');
 }
+
+function toggleAddForm() {
+  const form = document.getElementById('add-form');
+  if (form.style.display === 'none' || form.style.display === '') {
+    form.style.display = 'block';
+  } else {
+    form.style.display = 'none';
+  }
+}
