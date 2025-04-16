@@ -32,7 +32,7 @@
       </div>
     </div>
     <div id="add-form" class="add-form" style="display: none;">
-      <h3>Add New Anime</h3>
+      <h3>Add A Card</h3>
       <form id="anime-form" onsubmit="addNewAnime(event)">
         <div class="form-group">
           <label for="title">Title:</label>
@@ -63,6 +63,7 @@
       </form>
     </div>
     <div class="footer">
+      <button onclick="toggleAddForm()" class="add-card-button">Add A Card</button>
       <button onclick="removeLastCard();">Remove A Card</button>
     </div>
   </body>
